@@ -1,18 +1,19 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
 	"math/rand"
 	"os"
 	"sort"
 	"time"
+
+	"github.com/fatih/color"
 )
 
-type Location struct {
-	Description string
-	Transitions []string
-	Events      []string
-}
+var Out *os.File
+var In *os.File
+var player Character
 
 type Event struct {
 	Type        string
@@ -26,73 +27,6 @@ type Game struct {
 	Welcome         string
 	Health          int
 	CurrentLocation string
-}
-
-type Character struct {
-	Name    string
-	Health  int
-	Evasion int
-	Alive   bool
-	Speed   int
-	Weap    int
-	Npc     bool
-}
-
-type Players []Character
-
-var Out *os.File
-var In *os.File
-
-var evts = map[string]*Event{
-	"alienAttack": {
-		Chance:      20,
-		Description: "An alien beams in front of you and shoots you with a ray gun.",
-		Health:      -50,
-		Evt:         "doctorTreatment"},
-	"doctorTreatment": {
-		Chance:      10,
-		Description: "The doctor rushes in and inject you with a health boost.",
-		Health:      +30,
-		Evt:         ""},
-	"android": {
-		Chance:      50,
-		Description: "Data is in the turbo lift and says hi to you",
-		Health:      0,
-		Evt:         ""},
-	"relaxing": {
-		Chance:      100,
-		Description: "In the lounge you are so relaxed that your health improves.",
-		Health:      +10,
-		Evt:         ""},
-}
-
-var locationMap = map[string]*Location{
-	"Bridge": {
-		"You are on the bridge of a spaceship sitting in the Captain's chair.",
-		[]string{"Ready Room", "Turbo Lift"},
-		[]string{"alienAttack"}},
-	"Ready Room": {
-		"The Captain's ready room.",
-		[]string{"Bridge"},
-		[]string{}},
-	"Turbo Lift": {
-		"A Turbo Lift that takes you anywhere in the ship.",
-		[]string{"Bridge", "Lounge", "Engineering"},
-		[]string{"android"}},
-	"Engineering": {"You are in engineering where you see the star drive",
-		[]string{"Turbo Lift"}, []string{"alienAttack"}},
-	"Lounge": {"You are in the lounge, you feel very relaxed",
-		[]string{"Turbo Lift"}, []string{"relaxing"}},
-}
-var enemies = map[int]*Character{
-	1: {Name: "Klingon", Health: 50, Alive: true, Weap: 2},
-	2: {Name: "Romulan", Health: 55, Alive: true, Weap: 3},
-}
-
-var Weaps = map[int]*Weapon{
-	1: {Name: "Phaser", minAtt: 5, maxAtt: 15},
-	2: {Name: "Klingon Disruptor", minAtt: 1, maxAtt: 15},
-	3: {Name: "Romulan Disruptor", minAtt: 3, maxAtt: 12},
 }
 
 func (e *Event) ProcessEvent() int {
@@ -154,29 +88,6 @@ func (g *Game) ProcessEvents(events []string) {
 	for _, evtName := range events {
 		g.Health += evts[evtName].ProcessEvent()
 	}
-}
-
-func (p *Character) Equip(w int) {
-	p.Weap = w
-}
-
-func (p *Character) Attack() int {
-	return Weaps[p.Weap].Fire()
-}
-
-func (slice Players) Len() int {
-	return len(slice)
-}
-
-func (slice Players) Less(i, j int) bool {
-	// Sort Descending
-	return slice[i].Speed > slice[j].Speed
-	// Sort ascending
-	// return slice[i].Speed < slice[j].Speed
-}
-
-func (slice Players) Swap(i, j int) {
-	slice[i], slice[j] = slice[j], slice[i]
 }
 
 func RunBattle(players Players) {
@@ -270,8 +181,15 @@ func DisplayInfo(args ...interface{}) {
 	fmt.Fprintln(Out, args...)
 }
 
-func GetUserInput(i *int) {
+func UserInput(i *int) {
 	fmt.Fscan(In, i)
+}
+
+func UserInputln() string {
+	reader := bufio.NewReader(os.Stdin)
+	fmt.Print("\n >>> ")
+	text, _ := reader.ReadString('\n')
+	return text
 }
 
 func init() {
@@ -281,30 +199,34 @@ func init() {
 }
 
 func main() {
-	DisplayInfo("Welcome to Conkistador!")
 	// Players
-	p1 := new(Character)
-	p1.Name = "Paul"
-	p1.Speed = 1 + rand.Intn(100)
-	p1.Health = 100
-	p1.Alive = true
-	p1.Weap = 1
+	player := *new(Character)
+	player.Name = "Paul"
+	player.Speed = 1 + rand.Intn(100)
+	player.Health = 100
+	player.Alive = true
+	player.Weap = 1
+	player.CurrentLocation = "Bridge"
+	player.Play()
+}
 
-	p2 := new(Character)
-	*p2 = *enemies[1+rand.Intn(2)]
-	p2.Npc = true
-	p2.Speed = 1 + rand.Intn(100)
+func Output(c string, args ...interface{}) {
+	s := fmt.Sprint(args...)
+	colr := color.WhiteString
+	switch c {
+	case "green":
+		colr = color.GreenString
+	case "red":
+		colr = color.RedString
+	case "blue":
+		colr = color.BlueString
+	case "yellow":
+		colr = color.YellowString
+	}
+	fmt.Fprintln(Out, colr(s))
+}
 
-	players := Players{*p1, *p2}
-
-	sort.Sort(players)
-
-	DisplayInfo(players[0])
-	DisplayInfo(players[1])
-	DisplayInfo(players)
-
-	round := 1
-
-	g := &Game{Health: 100, Welcome: "Welcome to conkistdor!", CurrentLocation: "Bridge"}
-	g.Play()
+func Outputf(c string, format string, args ...interface{}) {
+	s := fmt.Sprintf(format, args...)
+	Output(c, s)
 }
