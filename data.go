@@ -31,24 +31,29 @@ var evts = map[string]*Event{
 
 var LocationMap = map[string]*Location{
 	"Bridge": {
-		"You are on the bridge of a spaceship sitting in the Captain's chair.",
-		[]string{"Ready Room", "Turbo Lift"},
-		[]string{"alienAttack"}},
-	"Ready Room": {
-		"The Captain's ready room.",
-		[]string{"Bridge"},
-		[]string{}},
-	"Turbo Lift": {
-		"A Turbo Lift that takes you anywhere in the ship.",
-		[]string{"Bridge", "Lounge", "Engineering"},
-		[]string{"android"}},
-	"Engineering": {"You are in engineering where you see the star drive",
-		[]string{"Turbo Lift"},
-		[]string{"alienAttack"}},
-	"Lounge": {"You are in the lounge, you feel very relaxed",
-		[]string{"Turbo Lift"},
-		[]string{"relaxing"}},
+		Description: "You are on the bridge of a spaceship sitting in the Captain's chair.",
+		Transitions: []string{"ReadyRoom", "TurboLift"},
+		Events:      []string{"alienAttack"}},
+	"ReadyRoom": {
+		Description: "The Captain's ready room.",
+		Transitions: []string{"Bridge"},
+		Events:      []string{},
+		Items:       []int{2}},
+	"TurboLift": {
+		Description: "A Turbo Lift that takes you anywhere in the ship.",
+		Transitions: []string{"Bridge", "Lounge", "Engineering"},
+		Events:      []string{"android"}},
+	"Engineering": {
+		Description: "You are in engineering where you see the star drive",
+		Transitions: []string{"TurboLift"},
+		Events:      []string{"alienAttack"},
+		Items:       []int{1}},
+	"Lounge": {
+		Description: "You are in the lounge, you feel very relaxed",
+		Transitions: []string{"TurboLift"},
+		Events:      []string{"relaxing"}},
 }
+
 var Enemies = map[int]*Character{
 	1: {Name: "Klingon", Health: 50, Alive: true, Weap: 2},
 	2: {Name: "Romulan", Health: 55, Alive: true, Weap: 3},

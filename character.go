@@ -51,11 +51,12 @@ func (p *Character) Play() {
 			return
 		}
 
-		Output("blue", "Health: ", p.Health)
+		Output("\nblue", "Health: ", p.Health)
+
 		if len(LocationMap[p.CurrentLocation].Items) > 0 {
 			Output("yellow", "You can see:")
 			for _, itm := range LocationMap[p.CurrentLocation].Items {
-				Ouputf("yellow", "\t%s", Items[itm].Name)
+				Outputf("yellow", "\t%s", Items[itm].Name)
 			}
 		}
 
