@@ -39,7 +39,7 @@ func main() {
 	player.Health = 100
 	player.Alive = true
 	player.Weap = 1
-	player.CurrentLocation = "Bridge"
+	player.CurrentLocation = "ReadyRoom"
 	player.Play()
 }
 
